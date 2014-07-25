@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Office Mix Study</title>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,400,700" rel='stylesheet' type='text/css'>
+    <style>
+        body {
+            font-family: "open sans";
+        }
+        #main {
+            margin-left: 30px;
+        }
+        #main div {
+            margin: 15px;
+        }
+        h3 {
+            color: teal;
+        }
+        a, a:active, a:visited {
+            color: #222;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        a:hover {
+            color: teal;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div id="tabs" class="clearfix">
+        <h1>Welcome to the Office Mix Study</h1>
+    </div>
+
+    <div id="main">
+        <div id="leftpane">
+            <h2>Your Participant ID: <span id="participant-id"></span> (<span id="study-time"></span> | <span id="study-room"></span>)</h2>
+            <div>
+                In this study, you will watch two lecture videos, respond to interactive exercises, and provide feedback to teachers.
+            </div>
+            <div id="tasks">
+            <h3>Part 1. Introduction</h3>
+                <h4>Study Overview</h4>
+                <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="preQ">Pre-Questionnaire</a></h4>
+                <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="selfmixTutorial">Mix Player and Self-Mix Tutorial</a></h4>
+                <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="muddyTutorial">Muddy-Mix Tutorial</a></h4>
+            <h3>Part 2. Lesson #1</h3>
+                <div id="lesson1">
+                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="lesson1Video">1. Watch the video.</a></h4>
+                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="lesson1Muddy">2. Tell us what was confusing <span id="lesson1Condition"></span>.</a></h4>
+                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="lesson1Q">3. Questionnaire</a></h4>
+                </div>
+            <h3>Part 3. Lesson #2</h3>
+                <div id="lesson2">
+                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="lesson2Video">1. Watch the video.</a></h4>
+                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="lesson2Muddy">2. Tell us what was confusing <span id="lesson2Condition"></span>.</a></h4>
+                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="lesson2Q">3. Questionnaire</a></h4>
+                </div>
+            <h3>Part 4. Seeing other students' responses</h3>
+                <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="heatmap">Heatmap</a></h4>
+                <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="gallery">Gallery</a></h4>
+                <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="afterHeatmapQ">Heatmap and Gallery Questionnaire</a></h4>
+            <h3>Part 5. Wrap-up</h3>
+                <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="postQ">Post-Questionnaire</a></h4>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="Log.js"></script>
+
+    <script>
+    function gup(name) {
+        var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+        return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+    }
+
+    var pid = gup("pid");
+
+    var preQ = "https://www.surveygizmo.com/s3/1741092/Student-Pre-Mix-Survey";
+    var afterMixQ = "https://www.surveygizmo.com/s3/1741815/Student-After-Each-Mix-Survey";
+    var textQ = "https://www.surveygizmo.com/s3/1742970/Student-Free-Response-Muddy-Point-Survey";
+    var afterHeatmapQ = "https://www.surveygizmo.com/s3/1741909/Student-After-Heatmap-Gallery-Survey";
+    var postQ = "https://www.surveygizmo.com/s3/1741892/Student-After-ALL-Mixes-Survey";
+
+    var selfmixTutorial = "https://mix.office.com/watch/12txcmd2fyac2";
+    var muddyTutorial = "https://muddymix3.azurewebsites.net/11";
+    var heatmap = "https://muddymix3.azurewebsites.net/80/orderedByMuddiness";
+    var gallery = "http://selfmix.azurewebsites.net/exercise/review/221";
+
+
+    var mixes = {};
+//        "s01": {"mix1": "", "mix2": "", "mix1cond": "", "mix2cond": ""},
+//        "s02": {"mix1": "", "mix2": "", "mix1cond": "", "mix2cond": ""}
+
+
+
+    function processData(allText) {
+        var allTextLines = allText.split(/\r\n|\n/);
+        var headers = allTextLines[0].split(',');
+        var lines = [];
+
+        for (var i=1; i<allTextLines.length; i++) {
+            var data = allTextLines[i].split(',');
+            if (data.length == headers.length) {
+
+                var tarr = [];
+                var entry = {};
+                var sid;
+                mixes[data[0]] = {
+                    "friday": data[2],
+                    "monday": data[3],
+                    "room": data[4],
+                    "mix1": data[5],
+                    "mix2": data[7],
+                    "condition": data[10],
+                    "muddyID": data[11],
+                    "selfmixID": data[12]
+                };
+
+                /*
+                for (var j=0; j<headers.length; j++) {
+                    // headers[j]+":"+
+                    tarr.push(data[j]);
+                    if (j == 0) {
+                        sid = data[j];
+                        mixes[data[j]] = {};
+                    } else {
+                        mixes[sid][]
+                    }
+                }
+                */
+                lines.push(tarr);
+            }
+        }
+        //console.log(lines);
+        populateMixes();
+    }
+
+    function makeMuddyURL(id) {
+        return "https://muddymix3.azurewebsites.net/" + id;
+    }
+
+    function makeMuddyHeatmapURL(id) {
+        return "https://muddymix3.azurewebsites.net/" + id + "/orderedByMuddiness"
+    }
+
+    function makeGalleryURL(id) {
+        return "https://selfmix.azurewebsites.net/exercise/review/" + id;
+    }
+
+    function populateMixes() {
+        var data = mixes[pid];
+        console.log(data);
+        $("#lesson1Video").attr("href", data["mix1"]);
+        $("#lesson2Video").attr("href", data["mix2"]);
+
+        if (data["condition"] == "IndexFirst") {
+            $("#lesson1Muddy").attr("href", textQ);
+            $("#lesson2Muddy").attr("href", makeMuddyURL(data["muddyID"]));
+            $("#lesson1Condition").text("(text box)");
+            $("#lesson2Condition").text("(muddy box)");
+        } else if (data["condition"] == "MuddyFirst") {
+            $("#lesson2Muddy").attr("href", textQ);
+            $("#lesson1Muddy").attr("href", makeMuddyURL(data["muddyID"]));
+            $("#lesson2Condition").text("(text box)");
+            $("#lesson1Condition").text("(muddy box)");
+
+        } else {
+            alert("condition assignment error");
+        }
+
+        if (data["friday"] != "")
+            $("#study-time").text("Friday " + data["friday"]);
+        else if (data["monday"] != "")
+            $("#study-time").text("Monday " + data["monday"]);
+        else
+            alert("study time data error");
+
+        $("#study-room").text(data["room"]);
+        $("#heatmap").attr("href", makeMuddyHeatmapURL(data["muddyID"]));
+        $("#gallery").attr("href", makeGalleryURL(data["selfmixID"]));
+
+    }
+
+    $(document).ready(function(){
+        $("#participant-id").text(pid);
+        $("#preQ").attr("href", preQ);
+        $("#afterMixQ").attr("href", afterMixQ);
+        $("#textQ").attr("href", textQ);
+        $("#afterHeatmapQ").attr("href", afterHeatmapQ);
+        $("#postQ").attr("href", postQ);
+        $("#selfmixTutorial").attr("href", selfmixTutorial);
+        $("#muddyTutorial").attr("href", muddyTutorial);
+        $("#lesson1Q").attr("href", afterMixQ);
+        $("#lesson2Q").attr("href", afterMixQ);
+
+
+        $("a").click(function(){
+            $(this).closest("h4").find(".progress").html("V&nbsp;&nbsp;");
+            // Log.add("study.html", "click", {"pid": pid, "url": $(this).attr("href")});
+        });
+
+        $.ajax({
+            type: "GET",
+            url: "data.csv",
+            dataType: "text",
+            success: function(data) {processData(data);}
+        });
+
+/*
+        Log.createTasks();
+        var numTasks = 6;
+        var i, task, url, videoID, part, qUrl, tutorialConUrl, tutorialExpUrl;
+        $("<h3/>").html("Part 0. Tutorial").appendTo($("#tasks"));
+        tutorialConUrl = "simple_examples/tutorial.html?ks=0";
+        // "/app/player/6.00x/" + Log.tutorialCon.vid +
+        //         "?iid=" + Log.tutorialCon.iid +
+        //         "&pid=" + pid +
+        //         "&tid=" + Log.tutorialCon.tid +
+        //         "&torder=" + Log.tutorialCon.torder +
+        //         "&ttype=" + Log.tutorialCon.ttype +
+        //         "&vcode=" + Log.tutorialCon.vcode;
+        tutorialExpUrl = "simple_examples/tutorial.html?ks=1";
+        // "/app/player/6.00x/" + Log.tutorialExp.vid +
+                // "?iid=" + Log.tutorialExp.iid +
+                // "&pid=" + pid +
+                // "&tid=" + Log.tutorialExp.tid +
+                // "&torder=" + Log.tutorialExp.torder +
+                // "&ttype=" + Log.tutorialExp.ttype +
+                // "&vcode=" + Log.tutorialExp.vcode;
+        $("<div/>")
+            .html("<span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target='_blank' href='" + tutorialConUrl + "'>Tutorial 1</a>&nbsp;&nbsp;&nbsp;No feedback")
+            .appendTo($("#tasks"));
+        $("<div/>")
+            .html("<span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target='_blank' href='" + tutorialExpUrl + "'>Tutorial 2</a>&nbsp;&nbsp;&nbsp;Feedback")
+            .appendTo($("#tasks"));
+
+        for (i = 1; i <= numTasks; i++) {
+            console.log("TASK #", (pid - 1) * numTasks + i)
+            task = Log.conditions[(pid - 1) * numTasks + i];
+            url = task.vid;
+            if (task.iid == "con")
+                url += "?ks=0";
+            else
+                url += "?ks=1";
+                // "?iid=" + task.iid +
+                // "&pid=" + task.pid +
+                // "&tid=" + task.tid +
+                // "&torder=" + task.torder +
+                // "&ttype=" + task.ttype +
+                // "&vcode=" + task.vcode;
+            if (i == 1) {
+                part = 1;
+                $("<h3/>").html("Part 1.").appendTo($("#tasks"));
+            } else if (i == 3) {
+                part = 2;
+                $("<h3/>").html("Part 2.").appendTo($("#tasks"));
+            } else if (i == 5) {
+                part = 3;
+                $("<h3/>").html("Part 3.").appendTo($("#tasks"));
+            }
+            if (part == 1) {
+                if (task.iid == "con")
+                    qUrl = Log.part1QuestionnaireUrlNo;
+                else
+                    qUrl = Log.part1QuestionnaireUrlYes;
+            } else if (part == 2) {
+                if (task.iid == "con" && task.vcode == "A")
+                    qUrl = Log.part2QuestionnaireUrlNoA;
+                else if (task.iid == "con" && task.vcode == "B")
+                    qUrl = Log.part2QuestionnaireUrlNoB;
+                else if (task.iid == "exp" && task.vcode == "A")
+                    qUrl = Log.part2QuestionnaireUrlYesA;
+                else
+                    qUrl = Log.part2QuestionnaireUrlYesB;
+            } else if (part == 3) {
+                if (task.iid == "con")
+                    qUrl = Log.part3QuestionnaireUrlNo;
+                else
+                    qUrl = Log.part3QuestionnaireUrlYes;
+            }
+            var cond = "Feedback";
+            if (task.iid == "con")
+                cond = "No feedback";
+            $("<div/>")
+                .html("<span class='progress'>&nbsp;&nbsp;&nbsp;</span>" +
+                    "<a target='_blank' href='" + url + "'>Task " + task.torder + "</a>&nbsp;&nbsp;&nbsp;" + cond + "&nbsp;&nbsp;&nbsp;(" + task.vcode + ")")
+                    //" " + task.iid + " " + task.pid + " " + task.tid + " " + task.torder + " " + task.ttype + " " + task.vcode + " " + task.vid)
+                .appendTo($("#tasks"));
+            $("<div/>")
+                .html("<span class='progress'>&nbsp;&nbsp;&nbsp;</span>" +
+                    "<a target='_blank' href='" + qUrl + "'>Post-Task Questionnaire</a>")
+                .appendTo($("#tasks"));
+        }
+        // $("<h3/>").html("Part 4. Wrap-up").appendTo($("#tasks"));
+        // $("<div/>")
+        //     .html("<span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target='_blank' href='" + Log.post1QuestionnaireUrl + "'>Post Questionnaire #1</a>")
+        //     .appendTo($("#tasks"));
+        // $("<div/>")
+        //     .html("<span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target='_blank' href='" + Log.post2QuestionnaireUrl + "'>Post Questionnaire #2</a>")
+        //     .appendTo($("#tasks"));
+        // Log.add("study.html", "loaded", {"pid": pid});
+*/
+
+    });
+    </script>
+
+</body>
+</html>
