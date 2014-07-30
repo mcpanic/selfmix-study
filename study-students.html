@@ -37,24 +37,31 @@
         <div id="leftpane">
             <h2>Your Participant ID: <span id="participant-id"></span> (<span id="study-time"></span> | <span id="study-room"></span>)</h2>
             <div>
-                In this study, you will review one of the Mix videos you created in your last session. You will see a gallery of student responses to your Self-Mix exercise, and explore a heatmap of students' self-reported confusion.
+                In this study, you will watch two lecture videos, respond to interactive exercises, and provide feedback to teachers.
             </div>
             <div id="tasks">
-
-            <h3>Part 1. Self-Mix Gallery</h3>
-                <div id="selfmix">
-                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="mixURL">Your Mix: <span id="mixTitle"></span></a></h4>
-                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="selfMixURL">Self-Mix Gallery of student responses</a></h4>
-                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="selfMixQ">Questionnaire</a></h4>
+            <h3>Part 1. Introduction</h3>
+                <h4>Study Overview</h4>
+                <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="preQ">Pre-Questionnaire</a></h4>
+                <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="selfmixTutorial">Mix Player and Self-Mix Tutorial</a></h4>
+                <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="muddyTutorial">Muddy-Mix Tutorial</a></h4>
+            <h3>Part 2. Lesson #1</h3>
+                <div id="lesson1">
+                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="lesson1Video">1. Watch the video.</a></h4>
+                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="lesson1Muddy">2. Tell us what was confusing <span id="lesson1Condition"></span>.</a></h4>
+                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="lesson1Q">3. Questionnaire</a></h4>
                 </div>
-            <h3>Part 2. Muddy-Mix Heatmap</h3>
-                <div id="muddymix">
-                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="muddyURL1">Student Feedback <span class="muddy1Condition"></span></a></h4>
-                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="muddyQ1">Questionnaire <span class="muddy1Condition"></span></a></h4>
-                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="muddyURL2">Student Feedback <span class="muddy2Condition"></span></a></h4>
-                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="muddyQ2">Questionnaire <span class="muddy2Condition"></span></a></h4>
+            <h3>Part 3. Lesson #2</h3>
+                <div id="lesson2">
+                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="lesson2Video">1. Watch the video.</a></h4>
+                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="lesson2Muddy">2. Tell us what was confusing <span id="lesson2Condition"></span>.</a></h4>
+                    <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="lesson2Q">3. Questionnaire</a></h4>
                 </div>
-            <h3>Part 3. Wrap-up</h3>
+            <h3>Part 4. Seeing other students' responses</h3>
+                <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="heatmap">Heatmap</a></h4>
+                <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="gallery">Gallery</a></h4>
+                <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="afterHeatmapQ">Heatmap and Gallery Questionnaire</a></h4>
+            <h3>Part 5. Wrap-up</h3>
                 <h4><span class='progress'>&nbsp;&nbsp;&nbsp;</span><a target="_blank" href="" id="postQ">Post-Questionnaire</a></h4>
             </div>
         </div>
@@ -73,7 +80,6 @@
 
     var pid = gup("pid");
 
-/*
     var preQ = "https://www.surveygizmo.com/s3/1741092/Student-Pre-Mix-Survey";
     var afterMixQ = "https://www.surveygizmo.com/s3/1741815/Student-After-Each-Mix-Survey";
     var textQ = "https://www.surveygizmo.com/s3/1742970/Student-Free-Response-Muddy-Point-Survey";
@@ -84,12 +90,6 @@
     var muddyTutorial = "https://muddymix3.azurewebsites.net/11";
     var heatmap = "https://muddymix3.azurewebsites.net/80/orderedByMuddiness";
     var gallery = "http://selfmix.azurewebsites.net/exercise/review/221";
-*/
-
-    var selfMixQ = "https://www.surveygizmo.com/s3/1748416/Teachers-Round-2-Self-Mix-Survey";
-    var muddyQ = "";
-    var indexQ = "";
-    var postQ = "https://www.surveygizmo.com/s3/1748417/Teachers-Round-2-Post-Questionnaire";
 
 
     var mixes = {};
@@ -100,31 +100,25 @@
 
     function processData(allText) {
         var allTextLines = allText.split(/\r\n|\n/);
-        var headers = allTextLines[0].split('\t');
+        var headers = allTextLines[0].split(',');
         var lines = [];
 
         for (var i=1; i<allTextLines.length; i++) {
-            var data = allTextLines[i].split('\t');
-            console.log(data, data.length, headers.length);
-
-            //if (data.length == headers.length) {
+            var data = allTextLines[i].split(',');
+            if (data.length == headers.length) {
 
                 var tarr = [];
                 var entry = {};
                 var sid;
                 mixes[data[0]] = {
-                    "thursday": data[1],
                     "friday": data[2],
-                    "room": data[3],
-                    "mixTitle": data[5],
-                    "mixURL": data[6],
-                    "selfmixID": data[8],
-                    "selfmixMode": data[9],
-                    "selfmixURL": data[12],
-                    //"selfmixDesc": data[13],
-                    "condition": data[13],
-                    "muddyID": data[14],
-                    "indexID": data[15]
+                    "monday": data[3],
+                    "room": data[4],
+                    "mix1": data[5],
+                    "mix2": data[7],
+                    "condition": data[10],
+                    "muddyID": data[11],
+                    "selfmixID": data[12]
                 };
 
                 /*
@@ -140,7 +134,7 @@
                 }
                 */
                 lines.push(tarr);
-            //}
+            }
         }
         //console.log(lines);
         populateMixes();
@@ -150,13 +144,8 @@
         return "https://muddymix3.azurewebsites.net/" + id;
     }
 
-    // TODO
-    function makeIndexHeatmapURL(id) {
-        return "http://muddymix3.azurewebsites.net/80/rawComments/";
-    }
-
     function makeMuddyHeatmapURL(id) {
-        return "http://muddymix3.azurewebsites.net/" + id + "/orderedByMuddiness"
+        return "https://muddymix3.azurewebsites.net/" + id + "/orderedByMuddiness"
     }
 
     function makeGalleryURL(id) {
@@ -164,44 +153,41 @@
     }
 
     function populateMixes() {
-        //console.log(mixes);
         var data = mixes[pid];
         console.log(data);
-        $("#mixTitle").text(data["mixTitle"] + ' ' + data["mixURL"]);
-        $("#mixURL").attr("href", data["mixURL"]);
-        $("#selfMixURL").attr("href", data["selfmixURL"]);
+        $("#lesson1Video").attr("href", data["mix1"]);
+        $("#lesson2Video").attr("href", data["mix2"]);
 
         if (data["condition"] == "IndexFirst") {
-            $("#muddyURL1").attr("href", makeIndexHeatmapURL(data["indexID"]));
-            $("#muddyURL2").attr("href", makeMuddyHeatmapURL(data["muddyID"]));
-            $(".muddy1Condition").text("(text box)");
-            $(".muddy2Condition").text("(muddy box)");
+            $("#lesson1Muddy").attr("href", textQ);
+            $("#lesson2Muddy").attr("href", makeMuddyURL(data["muddyID"]));
+            $("#lesson1Condition").text("(text box)");
+            $("#lesson2Condition").text("(muddy box)");
         } else if (data["condition"] == "MuddyFirst") {
-            $("#muddyURL1").attr("href", makeMuddyHeatmapURL(data["muddyID"]));
-            $("#muddyURL2").attr("href", makeIndexHeatmapURL(data["indexID"]));
-            $(".muddy1Condition").text("(muddy box)");
-            $(".muddy2Condition").text("(index box)");
+            $("#lesson2Muddy").attr("href", textQ);
+            $("#lesson1Muddy").attr("href", makeMuddyURL(data["muddyID"]));
+            $("#lesson2Condition").text("(text box)");
+            $("#lesson1Condition").text("(muddy box)");
 
         } else {
             alert("condition assignment error");
         }
 
-        if (data["thursday"] != "")
-            $("#study-time").text("Thursday " + data["thursday"]);
-        else if (data["friday"] != "")
+        if (data["friday"] != "")
             $("#study-time").text("Friday " + data["friday"]);
+        else if (data["monday"] != "")
+            $("#study-time").text("Monday " + data["monday"]);
         else
             alert("study time data error");
 
         $("#study-room").text(data["room"]);
-//        $("#heatmap").attr("href", makeMuddyHeatmapURL(data["muddyID"]));
-//        $("#gallery").attr("href", makeGalleryURL(data["selfmixID"]));
+        $("#heatmap").attr("href", makeMuddyHeatmapURL(data["muddyID"]));
+        $("#gallery").attr("href", makeGalleryURL(data["selfmixID"]));
 
     }
 
     $(document).ready(function(){
         $("#participant-id").text(pid);
-        /*
         $("#preQ").attr("href", preQ);
         $("#afterMixQ").attr("href", afterMixQ);
         $("#textQ").attr("href", textQ);
@@ -211,9 +197,7 @@
         $("#muddyTutorial").attr("href", muddyTutorial);
         $("#lesson1Q").attr("href", afterMixQ);
         $("#lesson2Q").attr("href", afterMixQ);
-        */
-        $("#selfMixQ").attr("href", selfMixQ);
-        $("#postQ").attr("href", postQ);
+
 
         $("a").click(function(){
             $(this).closest("h4").find(".progress").html("V&nbsp;&nbsp;");
@@ -222,7 +206,7 @@
 
         $.ajax({
             type: "GET",
-            url: "teachers-round2.tsv",
+            url: "data.csv",
             dataType: "text",
             success: function(data) {processData(data);}
         });
