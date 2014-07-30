@@ -124,7 +124,8 @@
                     //"selfmixDesc": data[13],
                     "condition": data[13],
                     "muddyID": data[14],
-                    "indexID": data[15]
+                    "indexID": data[15],
+                    "noSelfmixURL": data[16]
                 };
 
                 /*
@@ -167,7 +168,7 @@
         //console.log(mixes);
         var data = mixes[pid];
         console.log(data);
-        $("#mixTitle").text(data["mixTitle"] + ' ' + data["mixURL"]);
+        $("#mixTitle").text(data["mixTitle"] + ' ' + data["noSelfmixURL"]);
         $("#mixURL").attr("href", data["mixURL"]);
         $("#selfMixURL").attr("href", data["selfmixURL"]);
 
