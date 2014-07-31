@@ -169,7 +169,7 @@
         console.log(data);
         $("#mixTitle").text(data["mixTitle"]);
         $("#mixURL").attr("href", data["mixURL"]);
-        $("#selfMixURL").attr("href", data["selfmixURL"]);
+        $("#selfMixURL").attr("href", data["selfmixURL"] + "?user=" + pid);
 
         if (data["condition"] == "IndexFirst") {
             $("#muddyURL1").attr("href", makeIndexHeatmapURL(data["noSelfmixURL"]));
