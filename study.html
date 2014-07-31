@@ -88,7 +88,7 @@
 
     var selfMixQ = "https://www.surveygizmo.com/s3/1748416/Teachers-Round-2-Self-Mix-Survey";
     var muddyQ = "https://www.surveygizmo.com/s3/1749197/Teachers-Round-2-Muddy-Mix-Survey";
-    var indexQ = "https://www.surveygizmo.com/s3/1749197/Teachers-Round-2-Muddy-Mix-Survey";
+    var indexQ = "https://www.surveygizmo.com/s3/1749938/Teachers-Round-2-Free-Response-Survey";
     var postQ = "https://www.surveygizmo.com/s3/1748417/Teachers-Round-2-Post-Questionnaire";
 
 
@@ -113,19 +113,19 @@
                 var entry = {};
                 var sid;
                 mixes[data[0]] = {
-                    "thursday": data[1],
-                    "friday": data[2],
-                    "room": data[3],
-                    "mixTitle": data[5],
-                    "mixURL": data[6],
-                    "selfmixID": data[8],
-                    "selfmixMode": data[9],
-                    "selfmixURL": data[12],
+                    "thursday": data[2],
+                    "friday": data[3],
+                    "room": data[4],
+                    "mixTitle": data[6],
+                    "mixURL": data[7],
+                    "selfmixID": data[9],
+                    "selfmixMode": data[10],
+                    "selfmixURL": data[13],
                     //"selfmixDesc": data[13],
-                    "condition": data[13],
-                    "muddyID": data[14],
-                    "indexID": data[15],
-                    "noSelfmixURL": data[16]
+                    "condition": data[14],
+                    "muddyID": data[15],
+                    //"indexID": data[16],
+                    "noSelfmixURL": data[17]
                 };
 
                 /*
@@ -151,9 +151,8 @@
         return "https://muddymix3.azurewebsites.net/" + id;
     }
 
-    // TODO
-    function makeIndexHeatmapURL(id) {
-        return "http://muddymix3.azurewebsites.net/80/rawComments/";
+    function makeIndexHeatmapURL(url) {
+        return "http://muddymix3.azurewebsites.net/80/rawComments/?noselfmixurl=" + url;
     }
 
     function makeMuddyHeatmapURL(id) {
@@ -168,20 +167,24 @@
         //console.log(mixes);
         var data = mixes[pid];
         console.log(data);
-        $("#mixTitle").text(data["mixTitle"] + ' ' + data["noSelfmixURL"]);
+        $("#mixTitle").text(data["mixTitle"]);
         $("#mixURL").attr("href", data["mixURL"]);
         $("#selfMixURL").attr("href", data["selfmixURL"]);
 
         if (data["condition"] == "IndexFirst") {
-            $("#muddyURL1").attr("href", makeIndexHeatmapURL(data["indexID"]));
+            $("#muddyURL1").attr("href", makeIndexHeatmapURL(data["noSelfmixURL"]));
             $("#muddyURL2").attr("href", makeMuddyHeatmapURL(data["muddyID"]));
-            $(".muddy1Condition").text("(text box)");
-            $(".muddy2Condition").text("(muddy box)");
+            $(".muddy1Condition").text("(free response)");
+            $(".muddy2Condition").text("(point and click)");
+            $("#muddyQ1").attr("href", indexQ);
+            $("#muddyQ2").attr("href", muddyQ);
         } else if (data["condition"] == "MuddyFirst") {
             $("#muddyURL1").attr("href", makeMuddyHeatmapURL(data["muddyID"]));
-            $("#muddyURL2").attr("href", makeIndexHeatmapURL(data["indexID"]));
-            $(".muddy1Condition").text("(muddy box)");
-            $(".muddy2Condition").text("(index box)");
+            $("#muddyURL2").attr("href", makeIndexHeatmapURL(data["noSelfmixURL"]));
+            $(".muddy1Condition").text("(point and click)");
+            $(".muddy2Condition").text("(free response)");
+            $("#muddyQ1").attr("href", muddyQ);
+            $("#muddyQ2").attr("href", indexQ);
 
         } else {
             alert("condition assignment error");
